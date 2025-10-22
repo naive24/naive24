@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>About — naive24</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="top-nav">
+    <a href="index.html">back</a>
+  </div>
+
+  <div class="about-container">
+  <!-- 슬라이드 갤러리 -->
+<section class="slider" id="work-slider">
+  <figure class="slide"><img src="assets/cover.jpg" alt=""></figure>
+  <figure class="slide"><img src="assets/profile 2.jpg" alt=""></figure>
+  <figure class="slide"><img src="assets/leaves.jpg" alt=""></figure>
+  <figure class="slide"><img src="assets/profile 3.jpg" alt=""></figure>
+  <!-- 필요하면 계속 추가 -->
+</section>
+
+<!-- 세로 스크롤을 가로 슬라이드로 변환 (휠로 옆으로 이동) -->
+<script>
+  const s = document.getElementById('work-slider');
+  s.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      s.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+    }
+  }, { passive: false });
+</script>
+
+  <h2>About naive24</h2>
+
+  <p class="about-text">
+    An alternative/shoegaze artist from Seoul, South Korea.<br>
+     He released his debut full-length album something you forgot in August 2024.<br>
+The record consists of eight tracks, blending shoegaze, alternative rock, and synth-driven textures <br>
+with heavy emotional themes of memory, confusion, and solitude.
+  </p>
+</div>
+
+<!-- 아이콘 -->
+  <div class="social-icons">
+    <a href="https://open.spotify.com/artist/3oQqctFx1KAdJ1F93gWGwY" target="_blank" class="icon spotify" aria-label="spotify"></a>
+    <a href="https://youtube.com/@naiiive24" target="_blank" class="icon youtube" aria-label="youtube"></a>
+    <a href="https://instagram.com/naiiive24" target="_blank" class="icon instagram" aria-label="instagram"></a>
+    <a href="https://naive24.bandcamp.com" target="_blank" class="icon bandcamp" aria-label="bandcamp"></a>
+  </div>
+
+</body>
+</html>

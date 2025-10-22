@@ -1,0 +1,222 @@
+body {
+  background: #000000;
+  color: #ffffff;
+  font-family: 'Jost', sans-serif;
+  padding: 20px;
+}
+h1 {
+  font-size: 75px;
+  margin: 0 0 20px;
+}
+.profile-img {
+  width: 500px;           
+  border-radius: 12px;
+  display: block;
+  margin-bottom: 20px;
+}
+.bio {
+  font-size: 30px;
+  font-weight: 400;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.profile-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;            
+  margin-top: 20px;
+}
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* 연락 영역: 딱 한 번만 선언 */
+.contact {
+  margin-top: 10px;
+  font-size: 24px;
+  color: #ffffff; /* 일반 텍스트 색 */
+  opacity: 1;
+}
+
+/* 링크 색 (방문 전/후/활성 모두) */
+.contact a,
+.contact a:visited,
+.contact a:active {
+  color: #ffffff;      /* ← # 한 개! */
+  text-decoration: none;
+}
+
+/* 호버 시만 살짝 페이드 */
+.contact a:hover {
+  opacity: 0.6;
+}
+.social-icons {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;  
+  gap: 25px;
+}
+
+.icon {
+  width: 35px;
+  height: 35px;
+  display: block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.icon:hover {
+  opacity: 0.65;
+  transform: scale(1.05);
+}
+
+
+.spotify {
+  background-image: url('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/spotify.svg');
+}
+.youtube {
+  background-image: url('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/youtube.svg');
+}
+.instagram {
+  background-image: url('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg');
+}
+.bandcamp {
+  background-image: url('https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/bandcamp.svg');
+}
+.top-nav {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+}
+
+.top-nav a {
+  color: #ffffff;
+  font-size: 40px;
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.top-nav a:hover {
+  opacity: 0.6;
+}
+.about-container {
+  max-width: 640px;          /* 폭 좁혀서 감성 ↑ */
+  margin: 180px auto 0;      /* 가운데 정렬 */
+  text-align: center;        /* 텍스트 중심 정렬 */
+}
+
+.about-container h2 {
+  font-size: 48px;
+  margin-bottom: 30px;
+  font-weight: 600;
+  text-align: center;        /* 헤더도 중앙 */
+}
+
+.about-text {
+  font-size: 20px;
+  line-height: 1.7;
+  color: #ffffff;
+  text-align: center;        /* 본문 중앙 */
+}
+
+/* ===== Square thumb slider (small) ===== */
+.slider{
+  margin: 20px auto 60px;
+  width: min(360px, 92vw);
+  height: 260px;                 /* 슬라이더 전체 높이(정사각 한 변) */
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory; /* 가로 스냅 */
+  gap: 10px;                     /* 카드 간격 */
+  padding: 0 8px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.slider::-webkit-scrollbar{ display:none; }
+
+.slide{
+  flex: 0 0 260px;               /* 정사각 너비 */
+  height: 260px;                 /* 정사각 높이 */
+  scroll-snap-align: center;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  transition: transform .25s ease;
+}
+.slide:hover{ transform: translateY(-2px); }
+
+.slide img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;             /* 정사각 안에서 꽉 채우기 */
+  display: block;
+}
+
+/* 더 작게 원하면 여기 값만 내려: 220px, 200px 등 */
+@media (max-width: 640px){
+  .slider{ height: 200px; gap: 12px; }
+  .slide{ flex-basis: 200px; height: 200px; border-radius: 10px; }
+}
+
+
+/* 모바일: 높이 줄여서 비율 맞춤 */
+@media (max-width: 640px){
+  .slider{ height: 48vh; gap: 16px; }
+  .slide{ border-radius: 12px; }
+}
+/* ===== Glitch banner (16:9, subtle wave) ===== */
+.glitch-banner{
+  width: 1px;              /* 크기: 숫자만 바꾸면 됨 */
+  aspect-ratio: 16 / 9;      /* 16:9 직사각형 */
+  border-radius: 90px;
+  overflow: hidden;
+  margin-left: 900px;         /* 오른쪽으로 띄우기 (필요시 조절) */
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+
+.glitch-content{
+  width: 50%;
+  height: 50%;
+  /* 배경: 그라데이션 + 아주 약한 노이즈 레이어 */
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255,255,255,.18), transparent 60%),
+    linear-gradient(120deg, #8EC5FC, #E0C3FC);
+  filter: url(#wave-glitch); /* SVG 글리치 필터 적용 */
+  transform: translateZ(0);  /* 리렌더링 최적화 */
+}
+
+/* 시각장애용 숨김 */
+.sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+/* 와이어프레임 배너: 오른쪽 공간용 16:9 */
+.wireframe-banner{
+  width: 520px;          /* 크기 조절: 420/480/560 등으로 바꿔도 됨 */
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-left: 550px;     /* 텍스트에서 오른쪽으로 띄우기 */
+  margin-top: 70px;      /* bio 아래 간격 */
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  background: #000;
+}
+.wireframe-banner canvas{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+
+
+
+
+
+
+

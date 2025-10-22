@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>naive24</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="top-nav">
+    <a href="about.html">about</a>
+  </div>
+
+  <h1>naive24</h1>
+
+  <div class="profile-section">
+    <!-- 왼쪽: 프로필 이미지 -->
+    <img src="assets/profile.jpg" class="profile-img">
+
+    <!-- 오른쪽 전체 묶음 -->
+    <div class="profile-right">
+
+      <!-- 텍스트 -->
+      <div class="profile-text">
+        <p class="bio">based in seoul · makes music</p>
+        <p class="contact">
+          <a href="mailto:darklordish2re@gmail.com">darklordish2re@gmail.com</a> ·
+          <a href="https://instagram.com/naiiive24" target="_blank">instagram</a>
+        </p>
+      </div>
+
+      <!-- ✅ 와이어프레임 글리치 배너 (16:9, subtle wave) -->
+      <div class="wireframe-banner">
+        <canvas id="wirefx"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- 아이콘 -->
+  <div class="social-icons">
+    <a href="https://open.spotify.com/artist/3oQqctFx1KAdJ1F93gWGwY" target="_blank" class="icon spotify" aria-label="spotify"></a>
+    <a href="https://youtube.com/@naiiive24" target="_blank" class="icon youtube" aria-label="youtube"></a>
+    <a href="https://instagram.com/naiiive24" target="_blank" class="icon instagram" aria-label="instagram"></a>
+    <a href="https://naive24.bandcamp.com" target="_blank" class="icon bandcamp" aria-label="bandcamp"></a>
+  </div>
+
+  <!-- ✅ 배너 애니메이션 스크립트 -->
+  <script>
+(() => {
+  const wrap = document.querySelector('.wireframe-banner');
+  if (!wrap) return;
+  const canvas = document.getElementById('wirefx');
+  const ctx = canvas.getContext('2d');
+
+  // ===== 사이즈 핏 =====
+  function fit(){
+    const r = wrap.getBoundingClientRect();
+    canvas.width  = Math.floor(r.width  * devicePixelRatio);
+    canvas.height = Math.floor(r.height * devicePixelRatio);
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  new ResizeObserver(fit).observe(wrap); fit();
+
+  // ===== 파라미터(느낌 조절) =====
+  let t = 0;
+  const BASE_SPEED      = 0.19;   // 전체 속도(느리게)
+  const ROT_SPEED_X     = 0.1231;   // 회전 속도
+  const ROT_SPEED_Y     = 0.1618;
+  const ROT_SPEED_Z     = 0.0893;
+  const TOPO_REGEN_SEC  = 1000;    // 토폴로지 재생성 주기(초)
+  const TRI_DENSITY     = 0.5;      // 1~4: 면 밀도 레벨 (지금 3)
+  const OUTLINE_SCALE   = 800;    // 화면 내 크기
+  const LINE_BASE_ALPHA = 1;   // 선 투명도 기본
+  const LINE_JITTER     = 0;    // 선 흔들림 강도(0~1.5)
+  const BAND_GLITCH_P   = 0;   // 수평 밴드 글리치 확률
+  // ==============================
+
+  // 난수 (xorshift)
+  let seed = 777;
+  function rand(){ seed^=seed<<13; seed^=seed>>>17; seed^=seed<<5; return (seed>>>0)/4294967295; }
+  function srand(s){ seed = s; }
+
+  // 3D 회전
+  function rotXYZ([x,y,z], ax, ay, az){
+    let cx, sx, cy, sy, cz, sz, X, Y, Z;
+    // Y
+    cx=Math.cos(ay); sx=Math.sin(ay);
+    X =  cx*x + sx*z; Z = -sx*x + cx*z; x = X; z = Z;
+    // X
+    cy=Math.cos(ax); sy=Math.sin(ax);
+    Y =  cy*y - sy*z; Z =  sy*y + cy*z; y = Y; z = Z;
+    // Z
+    cz=Math.cos(az); sz=Math.sin(az);
+    X =  cz*x - sz*y; Y =  sz*x + cz*y;
+    return [X,Y,Z];
+  }
+
+  // 원구 좌표 무작위 샘플
+  function randOnSphere(){
+    const u = rand()*2-1;                // cos(theta)
+    const a = rand()*Math.PI*2;
+    const s = Math.sqrt(1-u*u);
+    return [s*Math.cos(a), u, s*Math.sin(a)];
+  }
+
+  // 투영
+  function project([x,y,z]){
+    const w = canvas.width  / devicePixelRatio;
+    const h = canvas.height / devicePixelRatio;
+    const f = 320, d = 2.6 + z;          // focal, camera dist
+    const px = w/2 + (x * OUTLINE_SCALE) * (f/(f+d));
+    const py = h/2 + (y * OUTLINE_SCALE) * (f/(f+d));
+    return [px,py];
+  }
+
+  // ===== 폴리-수프(랜덤 삼각형들) 생성 =====
+  let tris = [];
+  let lastRegen = 0;
+
+  function regenerateTopology(){
+    tris = [];
+    // 밀도 레벨에 따른 삼각형 개수
+    const count = [90, 150, 230, 360][Math.min(Math.max(TRI_DENSITY,1),4)-1];
+    srand((Date.now()|0) ^ (seed>>>1));
+
+    for(let i=0;i<count;i++){
+      // 구 표면에서 3점 샘플 → 약간 안쪽/바깥쪽으로 랜덤 오프셋
+      const v1 = randOnSphere().map(v=>v*(0.92 + rand()*0.18));
+      const v2 = randOnSphere().map(v=>v*(0.92 + rand()*0.18));
+      const v3 = randOnSphere().map(v=>v*(0.92 + rand()*0.18));
+      // 선명도/두께 개별값
+      const alpha = LINE_BASE_ALPHA * (0.6 + rand()*0.5);
+      const width = 0.6 + rand()*1.2;
+      tris.push({v1,v2,v3, alpha, width});
+    }
+    lastRegen = t;
+  }
+
+  regenerateTopology();
+
+  function draw(){
+    const w = canvas.width  / devicePixelRatio;
+    const h = canvas.height / devicePixelRatio;
+
+    // 배경
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,w,h);
+
+    // 프레임 시드(부드럽게, 과도한 깜빡임 방지)
+    srand((t*900|0) ^ 0x9e3779b9);
+
+    // 토폴로지 재생성 (주기적으로 메쉬 갈아끼움)
+    if (t - lastRegen > TOPO_REGEN_SEC) regenerateTopology();
+
+    // 회전각
+    const ax = t*ROT_SPEED_X, ay = t*ROT_SPEED_Y, az = t*ROT_SPEED_Z;
+
+    // 삼각형들 그리기(와이어)
+    for(const tri of tris){
+      // 가벼운 랜덤 워블(선 흔들림)
+      const wob = (rand()-0.5)*0.02 * LINE_JITTER;
+
+      const p1 = project(rotXYZ([tri.v1[0]+wob, tri.v1[1]+wob, tri.v1[2]+wob], ax, ay, az));
+      const p2 = project(rotXYZ([tri.v2[0]-wob, tri.v2[1]+wob, tri.v2[2]-wob], ax, ay, az));
+      const p3 = project(rotXYZ([tri.v3[0]+wob, tri.v3[1]-wob, tri.v3[2]+wob], ax, ay, az));
+
+      // 화면 중심에서 멀수록 더 희미하게
+      const cx = (p1[0]+p2[0]+p3[0])/3 - w/2;
+      const cy = (p1[1]+p2[1]+p3[1])/3 - h/2;
+      const falloff = Math.min(1, Math.hypot(cx,cy)/(Math.min(w,h)*0.5));
+      const alpha = tri.alpha * (1 - 0.45*falloff);
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = tri.width;
+      ctx.strokeStyle = '#fff';
+
+      ctx.beginPath();
+      ctx.moveTo(p1[0], p1[1]);
+      ctx.lineTo(p2[0], p2[1]);
+      ctx.lineTo(p3[0], p3[1]);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 가끔 수평 밴드 글리치
+    if (Math.random() < BAND_GLITCH_P){
+      const bands = 0.01 + (rand()*2|0);
+      for(let i=0;i<bands;i++){
+        const y  = (rand()*h)|0;
+        const bh = 2 + (rand()*4|0);
+        const dx = (rand()<0.5?-1:1) * (2 + (rand()*8|0));
+        const img = ctx.getImageData(0,y,w,bh);
+        ctx.putImageData(img, dx, y);
+      }
+    }
+
+    // 하단 가이드 라인(아주 약하게)
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.beginPath();
+    ctx.moveTo(w*0.2, h*0.88);
+    ctx.lineTo(w*0.8, h*0.88);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#fff';
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function loop(){
+    // 느리게
+    t += BASE_SPEED * 0.010;
+    draw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+
