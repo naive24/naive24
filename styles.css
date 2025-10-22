@@ -321,17 +321,18 @@ img, canvas { max-width: 100%; height: auto; }
 }
 .icon {
   position: fixed;
-  right: 2vh;   /* 기존 right 대신 세로 단위 활용 */
+  right: 3vh;   /* 기존 right 대신 세로 단위 활용 */
   bottom: 4vh;
   z-index: 9999;
 }
 
 @media screen and (orientation: landscape) {
   .icon {
-    transform: translateX(3vh) scale(1.15); 
+    transform: translateX(3vh) scale(1.2); 
     /* 오른쪽으로 조금 미는 + 살짝 키우는 */
   }
 }
+
 
 
 
